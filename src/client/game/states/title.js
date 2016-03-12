@@ -1,8 +1,7 @@
-import { Color, VK_ENTER }      from 'rot-js';
-import { GK_KEYDOWN, GS_PLAY }  from '../core/events';
+import { Color, VK_RETURN }     from 'rot-js';
+import { GE_KEYDOWN, GS_PLAY }  from '../core/constants';
 
-export function StartState(game) {
-
+export function TitleState(game) {
     return {
         enter() {
             console.log('Entered start state.');
@@ -12,13 +11,9 @@ export function StartState(game) {
             console.log('Exited start state.');
         },
 
-        handle(event) {
-            console.log('event');
-
-            if (event.type === GK_KEYDOWN && event.keyCode === VK_ENTER) {
-                const stateEvent = new CustomEvent(GS_PLAY, {});
-
-                game.dispatchEvent(stateEvent);
+        handle(event, key) {
+            if (event === GE_KEYDOWN && key === VK_RETURN) {
+                game.switchTo(GS_PLAY);
             }
         },
 

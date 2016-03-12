@@ -1,5 +1,17 @@
 module.exports = [
     {
+        method: 'GET',
+        path:   '/',
+
+        handler: {
+            view: {
+                template:   'index',
+                context:    { title: 'Gloom' }
+            }
+        }
+    },
+
+    {
         method:     'GET',
         path:       '/{type}/{file}',
 

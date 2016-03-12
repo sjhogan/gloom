@@ -1,28 +1,57 @@
-const ROT   = require('rot-js');
-const _     = require('lodash');
+import { Display, isSupported, VK_ESCAPE, VK_RETURN } from 'rot-js';
 
-function drawDoor(display, x, y) {
-    display.draw(x, y, '', '', 'red');
-}
+import { GE_KEYDOWN, GE_STATECHANGE, GS_LOSE, GS_PLAY, GS_TITLE, GS_WIN } from './core/constants';
 
-function generateMap(ROT, display) {
-    ROT.RNG.setSeed(Date.now());
+import { LoseState }    from './states/lose';
+import { PlayState }    from './states/play';
+import { TitleState }   from './states/title';
+import { WinState }     from './states/win';
 
-    const map = new ROT.Map.Uniform(80, 30);
+window.onload = () => {
+    if (isSupported()) {
+        const display   = new Display({ width: 80, height: 24 });
+        const gloom     = Gloom(display);
 
-    map.create(display.DEBUG);
+        gloom.register(GS_LOSE, LoseState);
+        gloom.register(GS_PLAY, PlayState);
+        gloom.register(GS_TITLE, TitleState);
+        gloom.register(GS_WIN, WinState);
 
-    const draw = _.partial(drawDoor, display);
+        document.body.appendChild(display.getContainer());
 
-    map.getRooms().forEach((room,  index) => {
-        room.getDoors(draw);
+        gloom.switchTo(GS_TITLE);
+    }
+};
+
+function Gloom(display) {
+    const states = new Map();
+
+    window.addEventListener(GE_KEYDOWN, event => {
+        if (states.has('current')) {
+            states.get('current').handle(event.type, event.keyCode);
+        }
     });
-}
 
-if (ROT.isSupported()) {
-    const display = new ROT.Display({width: 80, height: 30});
+    return {
+        register(key, factory) {
+            states.set(key, factory(this));
+        },
 
-    document.body.appendChild(display.getContainer());
+        switchTo(key) {
+            if (states.has('current')) {
+                states.get('current').exit();
+            }
 
-    generateMap(ROT, display);
+            display.clear();
+
+            if (states.has(key)) {
+                const state = states.get(key);
+
+                state.enter();
+                state.render(display);
+
+                states.set('current', state);
+            }
+        }
+    };
 }
