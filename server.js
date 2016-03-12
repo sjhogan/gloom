@@ -1,7 +1,7 @@
 const Hapi          = require('hapi');
 const Path          = require('path');
 const handlebars    = require('handlebars');
-const plugins       = require('./src/config/plugins');
+const plugins       = require('./src/server/config/plugins');
 const index         = require('./src/server/routes/index');
 
 const server = new Hapi.Server({
