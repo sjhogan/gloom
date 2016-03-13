@@ -35,6 +35,13 @@ export function Map(floorPlan = [[]]) {
     const height    = tiles[0].length;
 
     return {
+        getDimensions() {
+            return {
+                height,
+                width
+            }
+        },
+
         getHeight() {
             return height;
         },

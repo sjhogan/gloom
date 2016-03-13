@@ -5636,6 +5636,51 @@ var GC_WHITE = exports.GC_WHITE = 'white';
 var GC_YELLOW = exports.GC_YELLOW = 'yellow';
 
 },{}],4:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.move = move;
+exports.origin = origin;
+/**
+ * Moves an entity to new position on the map.
+ *
+ * delta.x:
+ *   - Positive value means movement right.
+ *   - Negative value means movement left.
+ *   - 0 means no movement.
+ *
+ * delta.y:
+ *   - Positive value means movement down.
+ *   - Negative value mmeans movement up.
+ *   - 0 means no movement.
+ *
+ * @param map       {{width: number, height: number}}   Map dimensions.
+ * @param position  {{x: number, y: number}}            The entity's current position.
+ * @param delta     {{x: number, y: number}}            Change to entity position.
+ * @returns         {{x: number, y: number}}            The entity's new position.
+ */
+function move(map, position, delta) {
+    return {
+        x: Math.max(0, Math.min(map.width - 1, position.x + delta.x)),
+        y: Math.max(0, Math.min(map.height - 1, position.y + delta.y))
+    };
+}
+
+function origin(map, display, player) {
+    var x = arguments.length <= 3 || arguments[3] === undefined ? 5 : arguments[3];
+
+    var originX = Math.max(0, player.x - display.width / 2);
+    var originY = Math.max(0, player.y - display.height / 2);
+
+    return {
+        x: Math.min(originX, map.width - display.width),
+        y: Math.min(originY, map.height - display.height)
+    };
+}
+
+},{}],5:[function(require,module,exports){
 'use strict';
 
 var _rotJs = require('rot-js');
@@ -5669,13 +5714,28 @@ window.onload = function () {
 function Gloom(display) {
     var states = new Map();
 
+    var activeState = void 0;
+
     window.addEventListener(_constants.GE_KEYDOWN, function (event) {
-        if (states.has('current')) {
-            states.get('current').handle(event.type, event.keyCode);
+        if (activeState) {
+            activeState.handle(event.type, event.keyCode);
+
+            display.clear();
+
+            activeState.render(display);
         }
     });
 
     return {
+        getDimensions: function getDimensions() {
+            return {
+                height: display.getOptions().height,
+                width: display.getOptions().width
+            };
+        },
+        getDisplay: function getDisplay() {
+            return display;
+        },
         getHeight: function getHeight() {
             return display.getOptions().height;
         },
@@ -5686,25 +5746,23 @@ function Gloom(display) {
             states.set(key, factory(this));
         },
         switchTo: function switchTo(key) {
-            if (states.has('current')) {
-                states.get('current').exit();
+            if (activeState) {
+                activeState.exit();
             }
 
             display.clear();
 
             if (states.has(key)) {
-                var state = states.get(key);
+                activeState = states.get(key);
 
-                state.enter();
-                state.render(display);
-
-                states.set('current', state);
+                activeState.enter();
+                activeState.render(display);
             }
         }
     };
 }
 
-},{"./core/constants":3,"./states/lose":8,"./states/play":9,"./states/title":10,"./states/win":11,"rot-js":2}],5:[function(require,module,exports){
+},{"./core/constants":3,"./states/lose":9,"./states/play":10,"./states/title":11,"./states/win":12,"rot-js":2}],6:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5732,7 +5790,7 @@ function Glyph() {
     };
 }
 
-},{"../core/constants":3}],6:[function(require,module,exports){
+},{"../core/constants":3}],7:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5790,6 +5848,12 @@ function Map() {
     var height = tiles[0].length;
 
     return {
+        getDimensions: function getDimensions() {
+            return {
+                height: height,
+                width: width
+            };
+        },
         getHeight: function getHeight() {
             return height;
         },
@@ -5809,7 +5873,7 @@ function Map() {
     };
 }
 
-},{"./tile":7,"rot-js":2}],7:[function(require,module,exports){
+},{"./tile":8,"rot-js":2}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5839,7 +5903,7 @@ Tile.wallTile = function () {
     return Tile((0, _glyph.Glyph)('#', 'goldenrod'));
 };
 
-},{"../core/constants":3,"./glyph":5}],8:[function(require,module,exports){
+},{"../core/constants":3,"./glyph":6}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5871,7 +5935,7 @@ function LoseState(game) {
     };
 }
 
-},{"../core/constants":3,"rot-js":2}],9:[function(require,module,exports){
+},{"../core/constants":3,"rot-js":2}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5885,12 +5949,16 @@ var _constants = require('../core/constants');
 
 var _map = require('../map/map');
 
+var _display = require('../core/display');
+
 function PlayState(game) {
     var map = void 0;
 
+    var position = { x: 0, y: 0 };
+
     return {
         enter: function enter() {
-            map = (0, _map.CellularMap)(game.getWidth(), game.getHeight());
+            map = (0, _map.CellularMap)(500, 500);
         },
         exit: function exit() {
             console.log('Exited play state.');
@@ -5904,24 +5972,42 @@ function PlayState(game) {
                 if (key === _rotJs.VK_ESCAPE) {
                     return game.switchTo(_constants.GS_LOSE);
                 }
+
+                if (key === _rotJs.VK_LEFT) {
+                    position = (0, _display.move)(map.getDimensions(), position, { x: -1, y: 0 });
+                }
+
+                if (key === _rotJs.VK_RIGHT) {
+                    position = (0, _display.move)(map.getDimensions(), position, { x: 1, y: 0 });
+                }
+
+                if (key === _rotJs.VK_UP) {
+                    position = (0, _display.move)(map.getDimensions(), position, { x: 0, y: -1 });
+                }
+
+                if (key === _rotJs.VK_DOWN) {
+                    position = (0, _display.move)(map.getDimensions(), position, { x: 0, y: 1 });
+                }
             }
         },
         render: function render(display) {
-            var width = map.getWidth();
-            var height = map.getHeight();
+            var screen = game.getDimensions();
+            var topLeft = (0, _display.origin)(map.getDimensions(), screen, position);
 
-            for (var x = 0; x < width; x++) {
-                for (var y = 0; y < height; y++) {
+            for (var x = topLeft.x; x < topLeft.x + screen.width; x++) {
+                for (var y = topLeft.y; y < topLeft.y + screen.height; y++) {
                     var glyph = map.getTile(x, y).getGlyph();
 
-                    display.draw(x, y, glyph.getChar(), glyph.getForeground(), glyph.getBackground());
+                    display.draw(x - topLeft.x, y - topLeft.y, glyph.getChar(), glyph.getForeground(), glyph.getBackground());
                 }
             }
+
+            display.draw(position.x - topLeft.x, position.y - topLeft.y, '@', 'white', 'black');
         }
     };
 }
 
-},{"../core/constants":3,"../map/map":6,"rot-js":2}],10:[function(require,module,exports){
+},{"../core/constants":3,"../core/display":4,"../map/map":7,"rot-js":2}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5936,10 +6022,10 @@ var _constants = require('../core/constants');
 function TitleState(game) {
     return {
         enter: function enter() {
-            console.log('Entered start state.');
+            console.log('Entered title state.');
         },
         exit: function exit() {
-            console.log('Exited start state.');
+            console.log('Exited title state.');
         },
         handle: function handle(event, key) {
             if (event === _constants.GE_KEYDOWN && key === _rotJs.VK_RETURN) {
@@ -5954,7 +6040,7 @@ function TitleState(game) {
     };
 }
 
-},{"../core/constants":3,"rot-js":2}],11:[function(require,module,exports){
+},{"../core/constants":3,"rot-js":2}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5986,4 +6072,4 @@ function WinState(game) {
     };
 }
 
-},{"../core/constants":3,"rot-js":2}]},{},[4]);
+},{"../core/constants":3,"rot-js":2}]},{},[5]);
