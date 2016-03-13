@@ -4,11 +4,11 @@ import { GE_KEYDOWN, GS_PLAY }  from '../core/constants';
 export function TitleState(game) {
     return {
         enter() {
-            console.log('Entered start state.');
+            console.log('Entered title state.');
         },
 
         exit() {
-            console.log('Exited start state.');
+            console.log('Exited title state.');
         },
 
         handle(event, key) {

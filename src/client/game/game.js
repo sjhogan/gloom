@@ -26,13 +26,30 @@ window.onload = () => {
 function Gloom(display) {
     const states = new Map();
 
+    let activeState;
+
     window.addEventListener(GE_KEYDOWN, event => {
-        if (states.has('current')) {
-            states.get('current').handle(event.type, event.keyCode);
+        if (activeState) {
+            activeState.handle(event.type, event.keyCode);
+
+            display.clear();
+
+            activeState.render(display);
         }
     });
 
     return {
+        getDimensions() {
+            return {
+                height: display.getOptions().height,
+                width:  display.getOptions().width
+            }
+        },
+
+        getDisplay() {
+            return display;
+        },
+
         getHeight() {
             return display.getOptions().height;
         },
@@ -46,19 +63,17 @@ function Gloom(display) {
         },
 
         switchTo(key) {
-            if (states.has('current')) {
-                states.get('current').exit();
+            if (activeState) {
+                activeState.exit();
             }
 
             display.clear();
 
             if (states.has(key)) {
-                const state = states.get(key);
+                activeState = states.get(key);
 
-                state.enter();
-                state.render(display);
-
-                states.set('current', state);
+                activeState.enter();
+                activeState.render(display);
             }
         }
     };
