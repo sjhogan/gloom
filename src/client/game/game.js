@@ -33,6 +33,14 @@ function Gloom(display) {
     });
 
     return {
+        getHeight() {
+            return display.getOptions().height;
+        },
+
+        getWidth() {
+            return display.getOptions().width;
+        },
+
         register(key, factory) {
             states.set(key, factory(this));
         },

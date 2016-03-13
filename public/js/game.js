@@ -5630,6 +5630,11 @@ var GS_PLAY = exports.GS_PLAY = 'play';
 var GS_TITLE = exports.GS_TITLE = 'title';
 var GS_WIN = exports.GS_WIN = 'win';
 
+var GC_BLACK = exports.GC_BLACK = 'black';
+var GC_GOLDENROD = exports.GC_GOLDENROD = 'goldenrod';
+var GC_WHITE = exports.GC_WHITE = 'white';
+var GC_YELLOW = exports.GC_YELLOW = 'yellow';
+
 },{}],4:[function(require,module,exports){
 'use strict';
 
@@ -5671,6 +5676,12 @@ function Gloom(display) {
     });
 
     return {
+        getHeight: function getHeight() {
+            return display.getOptions().height;
+        },
+        getWidth: function getWidth() {
+            return display.getOptions().width;
+        },
         register: function register(key, factory) {
             states.set(key, factory(this));
         },
@@ -5693,7 +5704,142 @@ function Gloom(display) {
     };
 }
 
-},{"./core/constants":3,"./states/lose":5,"./states/play":6,"./states/title":7,"./states/win":8,"rot-js":2}],5:[function(require,module,exports){
+},{"./core/constants":3,"./states/lose":8,"./states/play":9,"./states/title":10,"./states/win":11,"rot-js":2}],5:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Glyph = Glyph;
+
+var _constants = require('../core/constants');
+
+function Glyph() {
+    var char = arguments.length <= 0 || arguments[0] === undefined ? ' ' : arguments[0];
+    var foreground = arguments.length <= 1 || arguments[1] === undefined ? _constants.GC_WHITE : arguments[1];
+    var background = arguments.length <= 2 || arguments[2] === undefined ? _constants.GC_BLACK : arguments[2];
+
+    return {
+        getBackground: function getBackground() {
+            return background;
+        },
+        getChar: function getChar() {
+            return char;
+        },
+        getForeground: function getForeground() {
+            return foreground;
+        }
+    };
+}
+
+},{"../core/constants":3}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.CellularMap = CellularMap;
+exports.Map = Map;
+
+var _rotJs = require('rot-js');
+
+var _tile = require('./tile');
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function getEmptyMap(width, height) {
+    return new Array(width).fill(0).map(function () {
+        return new Array(height).fill(0).map(function () {
+            return _tile.Tile.nullTile();
+        });
+    });
+}
+
+function getCellularGenerator(width, height, aliveRatio) {
+    var generator = new _rotJs.Map.Cellular(width, height);
+
+    generator.randomize(aliveRatio);
+
+    return generator;
+}
+
+function CellularMap(width, height) {
+    var aliveRatio = arguments.length <= 2 || arguments[2] === undefined ? 0.5 : arguments[2];
+    var iterations = arguments.length <= 3 || arguments[3] === undefined ? 3 : arguments[3];
+
+    var tiles = getEmptyMap(width, height);
+    var mapper = getCellularGenerator(width, height, aliveRatio);
+    var preseed = iterations - 1;
+
+    for (var i = 0; i < preseed; i++) {
+        mapper.create();
+    }
+
+    mapper.create(function (x, y, alive) {
+        return tiles[x][y] = alive ? _tile.Tile.floorTile() : _tile.Tile.wallTile();
+    });
+
+    return Map(tiles);
+}
+
+function Map() {
+    var floorPlan = arguments.length <= 0 || arguments[0] === undefined ? [[]] : arguments[0];
+
+    var tiles = [].concat(_toConsumableArray(floorPlan));
+    var width = tiles.length;
+    var height = tiles[0].length;
+
+    return {
+        getHeight: function getHeight() {
+            return height;
+        },
+        getTile: function getTile(x, y) {
+            if (x < 0 || x >= width || y < 0 || y >= height) {
+                return _tile.Tile.nullTile();
+            }
+
+            return tiles[x][y] || _tile.Tile.nullTile();
+        },
+        getTiles: function getTiles() {
+            return [].concat(_toConsumableArray(tiles));
+        },
+        getWidth: function getWidth() {
+            return width;
+        }
+    };
+}
+
+},{"./tile":7,"rot-js":2}],7:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Tile = Tile;
+
+var _glyph = require('./glyph');
+
+var _constants = require('../core/constants');
+
+function Tile(glyph) {
+    return {
+        getGlyph: function getGlyph() {
+            return glyph;
+        }
+    };
+}
+
+Tile.floorTile = function () {
+    return Tile((0, _glyph.Glyph)('.'));
+};
+Tile.nullTile = function () {
+    return Tile((0, _glyph.Glyph)());
+};
+Tile.wallTile = function () {
+    return Tile((0, _glyph.Glyph)('#', 'goldenrod'));
+};
+
+},{"../core/constants":3,"./glyph":5}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5725,7 +5871,7 @@ function LoseState(game) {
     };
 }
 
-},{"../core/constants":3,"rot-js":2}],6:[function(require,module,exports){
+},{"../core/constants":3,"rot-js":2}],9:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5737,10 +5883,14 @@ var _rotJs = require('rot-js');
 
 var _constants = require('../core/constants');
 
+var _map = require('../map/map');
+
 function PlayState(game) {
+    var map = void 0;
+
     return {
         enter: function enter() {
-            console.log('Entered play state.');
+            map = (0, _map.CellularMap)(game.getWidth(), game.getHeight());
         },
         exit: function exit() {
             console.log('Exited play state.');
@@ -5757,13 +5907,21 @@ function PlayState(game) {
             }
         },
         render: function render(display) {
-            display.drawText(35, 5, '%c{yellow}Play state');
-            display.drawText(21, 21, 'Press [Enter] to win, or [Esc] to lose');
+            var width = map.getWidth();
+            var height = map.getHeight();
+
+            for (var x = 0; x < width; x++) {
+                for (var y = 0; y < height; y++) {
+                    var glyph = map.getTile(x, y).getGlyph();
+
+                    display.draw(x, y, glyph.getChar(), glyph.getForeground(), glyph.getBackground());
+                }
+            }
         }
     };
 }
 
-},{"../core/constants":3,"rot-js":2}],7:[function(require,module,exports){
+},{"../core/constants":3,"../map/map":6,"rot-js":2}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -5796,7 +5954,7 @@ function TitleState(game) {
     };
 }
 
-},{"../core/constants":3,"rot-js":2}],8:[function(require,module,exports){
+},{"../core/constants":3,"rot-js":2}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
