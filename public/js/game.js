@@ -5764,8 +5764,8 @@ function getCellularGenerator(width, height, aliveRatio) {
 }
 
 function CellularMap(width, height) {
-    var aliveRatio = arguments.length <= 2 || arguments[2] === undefined ? 0.5 : arguments[2];
-    var iterations = arguments.length <= 3 || arguments[3] === undefined ? 3 : arguments[3];
+    var aliveRatio = arguments.length <= 2 || arguments[2] === undefined ? 0.575 : arguments[2];
+    var iterations = arguments.length <= 3 || arguments[3] === undefined ? 5 : arguments[3];
 
     var tiles = getEmptyMap(width, height);
     var mapper = getCellularGenerator(width, height, aliveRatio);

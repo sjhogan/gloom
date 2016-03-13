@@ -15,7 +15,7 @@ function getCellularGenerator(width, height, aliveRatio) {
     return generator;
 }
 
-export function CellularMap(width, height, aliveRatio = 0.5, iterations = 3) {
+export function CellularMap(width, height, aliveRatio = 0.575, iterations = 5) {
     const tiles     = getEmptyMap(width, height);
     const mapper    = getCellularGenerator(width, height, aliveRatio);
     const preseed   = iterations - 1;
