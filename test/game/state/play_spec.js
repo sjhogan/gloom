@@ -3,7 +3,7 @@ import sinonChai    from 'sinon-chai';
 import sinon        from 'sinon';
 
 import { VK_ESCAPE, VK_RETURN }         from 'rot-js';
-import { PlayState }                    from '../../../src/client/game/states/play';
+import { PlayState }                    from '../../../src/client/game/state/play';
 import { GE_KEYDOWN, GS_LOSE, GS_WIN }  from '../../../src/client/game/core/constants';
 
 chai.should();

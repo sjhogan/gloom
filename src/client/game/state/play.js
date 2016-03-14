@@ -52,9 +52,9 @@ export function PlayState(game) {
 
             for (let x = topLeft.x; x < topLeft.x + screen.width; x++) {
                 for (let y = topLeft.y; y < topLeft.y + screen.height; y++) {
-                    const glyph = map.getTile(x, y).getGlyph();
+                    const tile = map.getTile(x, y);
 
-                    display.draw(x - topLeft.x, y - topLeft.y, glyph.getChar(), glyph.getForeground(), glyph.getBackground());
+                    display.draw(x - topLeft.x, y - topLeft.y, tile.getCharacter(), tile.getForeground(), tile.getBackground());
                 }
             }
 
