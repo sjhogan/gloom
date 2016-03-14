@@ -29,19 +29,19 @@ export function PlayState(game) {
                 }
 
                 if (key === VK_LEFT) {
-                    position = move(map.getDimensions(), pos, { x: -1, y: 0 });
+                    pos = move(map.getDimensions(), pos, { x: -1, y: 0 });
                 }
 
                 if (key === VK_RIGHT) {
-                    position = move(map.getDimensions(), pos, { x: 1, y: 0 });
+                    pos = move(map.getDimensions(), pos, { x: 1, y: 0 });
                 }
 
                 if (key === VK_UP) {
-                    position = move(map.getDimensions(), pos, { x: 0, y: -1 });
+                    pos = move(map.getDimensions(), pos, { x: 0, y: -1 });
                 }
 
                 if (key === VK_DOWN) {
-                    position = move(map.getDimensions(), pos, { x: 0, y: 1 });
+                    pos = move(map.getDimensions(), pos, { x: 0, y: 1 });
                 }
             }
         },

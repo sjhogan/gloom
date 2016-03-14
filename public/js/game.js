@@ -6011,19 +6011,19 @@ function PlayState(game) {
                 }
 
                 if (key === _rotJs.VK_LEFT) {
-                    position = (0, _display.move)(map.getDimensions(), pos, { x: -1, y: 0 });
+                    pos = (0, _display.move)(map.getDimensions(), pos, { x: -1, y: 0 });
                 }
 
                 if (key === _rotJs.VK_RIGHT) {
-                    position = (0, _display.move)(map.getDimensions(), pos, { x: 1, y: 0 });
+                    pos = (0, _display.move)(map.getDimensions(), pos, { x: 1, y: 0 });
                 }
 
                 if (key === _rotJs.VK_UP) {
-                    position = (0, _display.move)(map.getDimensions(), pos, { x: 0, y: -1 });
+                    pos = (0, _display.move)(map.getDimensions(), pos, { x: 0, y: -1 });
                 }
 
                 if (key === _rotJs.VK_DOWN) {
-                    position = (0, _display.move)(map.getDimensions(), pos, { x: 0, y: 1 });
+                    pos = (0, _display.move)(map.getDimensions(), pos, { x: 0, y: 1 });
                 }
             }
         },
