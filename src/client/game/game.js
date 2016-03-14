@@ -2,10 +2,10 @@ import { Display, isSupported, VK_ESCAPE, VK_RETURN } from 'rot-js';
 
 import { GE_KEYDOWN, GE_STATECHANGE, GS_LOSE, GS_PLAY, GS_TITLE, GS_WIN } from './core/constants';
 
-import { LoseState }    from './states/lose';
-import { PlayState }    from './states/play';
-import { TitleState }   from './states/title';
-import { WinState }     from './states/win';
+import { LoseState }    from './state/lose';
+import { PlayState }    from './state/play';
+import { TitleState }   from './state/title';
+import { WinState }     from './state/win';
 
 window.onload = () => {
     if (isSupported()) {
