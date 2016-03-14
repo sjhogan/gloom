@@ -1,32 +1,9 @@
-import { Map as Generator } from 'rot-js';
-import { Tile } from './tile';
+import { Tile } from './../entity/tile';
 
-function getEmptyMap(width, height) {
+export function getEmptyMap(width, height) {
     return new Array(width).fill(0).map(() => {
         return new Array(height).fill(0).map(() => Tile.nullTile());
     });
-}
-
-function getCellularGenerator(width, height, aliveRatio) {
-    const generator = new Generator.Cellular(width, height);
-
-    generator.randomize(aliveRatio);
-
-    return generator;
-}
-
-export function CellularMap(width, height, aliveRatio = 0.575, iterations = 5) {
-    const tiles     = getEmptyMap(width, height);
-    const mapper    = getCellularGenerator(width, height, aliveRatio);
-    const preseed   = iterations - 1;
-
-    for (let i = 0; i < preseed; i++) {
-        mapper.create();
-    }
-
-    mapper.create((x, y, alive) => tiles[x][y] = alive ? Tile.floorTile() : Tile.wallTile());
-
-    return Map(tiles);
 }
 
 export function Map(floorPlan = [[]]) {
@@ -35,15 +12,30 @@ export function Map(floorPlan = [[]]) {
     const height    = tiles[0].length;
 
     return {
-        getDimensions() {
-            return {
-                height,
-                width
+        dig(x, y) {
+            if (this.getTile(x, y).isDiggable()) {
+                tiles[x][y] = Tile.floorTile();
             }
+        },
+
+        getDimensions() {
+            return { height, width };
         },
 
         getHeight() {
             return height;
+        },
+
+        getRandomWalkablePosition() {
+            let x = 0;
+            let y = 0;
+
+            while(!this.getTile(x, y).isWalkable()) {
+                x = Math.floor(Math.random() * width);
+                y = Math.floor(Math.random() * height);
+            }
+
+            return { x: x, y: y };
         },
 
         getTile(x, y) {
