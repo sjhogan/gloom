@@ -5,9 +5,9 @@ const character     = ' ';
 const foreground    = GC_WHITE;
 
 export function Glyph(properties = { background, character, foreground }) {
-    return Object.assign({}, {
+    return {
         getBackground: () => properties.background || background,
         getCharacter: () => properties.character || character,
         getForeground: () => properties.foreground || foreground
-    });
+    };
 }

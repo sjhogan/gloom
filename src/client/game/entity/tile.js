@@ -4,10 +4,12 @@ import { GC_GOLDENROD } from '../core/constants'
 export function Tile(properties = {}) {
     const { walkable, diggable } = properties;
 
-    return Object.assign(Glyph(properties), {
-        isDiggable: () => !!diggable,
-        isWalkable: () => !!walkable
-    });
+    const glyph = Glyph(properties);
+
+    glyph.isDiggable = () => !!diggable;
+    glyph.isWalkable = () => !!walkable;
+
+    return glyph;
 }
 
 Tile.floorTile = () => Tile({ character: '.', walkable: true });
