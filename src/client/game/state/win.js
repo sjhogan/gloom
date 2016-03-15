@@ -1,7 +1,7 @@
 import { Color, VK_RETURN }     from 'rot-js';
 import { GE_KEYDOWN, GS_TITLE } from '../core/constants';
 
-export function WinState(game) {
+export function winState(game) {
     return {
         enter() {
             console.log('Entered win state.');

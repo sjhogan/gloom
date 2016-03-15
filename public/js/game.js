@@ -5683,27 +5683,94 @@ function origin(map, display, player) {
 },{}],5:[function(require,module,exports){
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Glyph = Glyph;
+
+var _constants = require('../core/constants');
+
+function Glyph() {
+    var properties = arguments.length <= 0 || arguments[0] === undefined ? { background: _constants.GC_BLACK, character: ' ', foreground: _constants.GC_WHITE } : arguments[0];
+
+    this._background = properties.background;
+    this._character = properties.character;
+    this._foreground = properties.foreground;
+}
+
+Glyph.prototype.getBackground = function () {
+    return this._background || _constants.GC_BLACK;
+};
+
+Glyph.prototype.getCharacter = function () {
+    return this._character || ' ';
+};
+
+Glyph.prototype.getForeground = function () {
+    return this._foreground || _constants.GC_WHITE;
+};
+
+},{"../core/constants":3}],6:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.Tile = Tile;
+
+var _glyph = require('./glyph');
+
+var _constants = require('../core/constants');
+
+function Tile() {
+    var properties = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
+
+    _glyph.Glyph.call(this, properties);
+
+    this._diggable = properties.diggable;
+    this._walkable = properties.walkable;
+}
+
+Tile.prototype = Object.create(_glyph.Glyph.prototype);
+
+Tile.prototype.isDiggable = function () {
+    return !!this._diggable;
+};
+
+Tile.prototype.isWalkable = function () {
+    return !!this._walkable;
+};
+
+Tile.prototype.constructor = Tile;
+
+Tile.FloorTile = new Tile({ character: '.', walkable: true });
+Tile.NullTile = new Tile();
+Tile.WallTile = new Tile({ character: '#', foreground: 'goldenrod', diggable: true });
+
+},{"../core/constants":3,"./glyph":5}],7:[function(require,module,exports){
+'use strict';
+
 var _rotJs = require('rot-js');
 
 var _constants = require('./core/constants');
 
-var _lose = require('./states/lose');
+var _lose = require('./state/lose');
 
-var _play = require('./states/play');
+var _play = require('./state/play');
 
-var _title = require('./states/title');
+var _title = require('./state/title');
 
-var _win = require('./states/win');
+var _win = require('./state/win');
 
 window.onload = function () {
     if ((0, _rotJs.isSupported)()) {
         var display = new _rotJs.Display({ width: 80, height: 24 });
         var gloom = Gloom(display);
 
-        gloom.register(_constants.GS_LOSE, _lose.LoseState);
-        gloom.register(_constants.GS_PLAY, _play.PlayState);
-        gloom.register(_constants.GS_TITLE, _title.TitleState);
-        gloom.register(_constants.GS_WIN, _win.WinState);
+        gloom.register(_constants.GS_LOSE, _lose.loseState);
+        gloom.register(_constants.GS_PLAY, _play.playState);
+        gloom.register(_constants.GS_TITLE, _title.titleState);
+        gloom.register(_constants.GS_WIN, _win.winState);
 
         document.body.appendChild(display.getContainer());
 
@@ -5762,71 +5829,34 @@ function Gloom(display) {
     };
 }
 
-},{"./core/constants":3,"./states/lose":9,"./states/play":10,"./states/title":11,"./states/win":12,"rot-js":2}],6:[function(require,module,exports){
+},{"./core/constants":3,"./state/lose":10,"./state/play":11,"./state/title":12,"./state/win":13,"rot-js":2}],8:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.Glyph = Glyph;
-
-var _constants = require('../core/constants');
-
-function Glyph() {
-    var char = arguments.length <= 0 || arguments[0] === undefined ? ' ' : arguments[0];
-    var foreground = arguments.length <= 1 || arguments[1] === undefined ? _constants.GC_WHITE : arguments[1];
-    var background = arguments.length <= 2 || arguments[2] === undefined ? _constants.GC_BLACK : arguments[2];
-
-    return {
-        getBackground: function getBackground() {
-            return background;
-        },
-        getChar: function getChar() {
-            return char;
-        },
-        getForeground: function getForeground() {
-            return foreground;
-        }
-    };
-}
-
-},{"../core/constants":3}],7:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.CellularMap = CellularMap;
-exports.Map = Map;
+exports.cellularMap = cellularMap;
 
 var _rotJs = require('rot-js');
 
-var _tile = require('./tile');
+var _map = require('./map');
 
-function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+var _tile = require('../entity/tile');
 
-function getEmptyMap(width, height) {
-    return new Array(width).fill(0).map(function () {
-        return new Array(height).fill(0).map(function () {
-            return _tile.Tile.nullTile();
-        });
-    });
+function getMapper(width, height, aliveRatio) {
+    var mapper = new _rotJs.Map.Cellular(width, height);
+
+    mapper.randomize(aliveRatio);
+
+    return mapper;
 }
 
-function getCellularGenerator(width, height, aliveRatio) {
-    var generator = new _rotJs.Map.Cellular(width, height);
-
-    generator.randomize(aliveRatio);
-
-    return generator;
-}
-
-function CellularMap(width, height) {
+function cellularMap(width, height) {
     var aliveRatio = arguments.length <= 2 || arguments[2] === undefined ? 0.575 : arguments[2];
     var iterations = arguments.length <= 3 || arguments[3] === undefined ? 5 : arguments[3];
 
-    var tiles = getEmptyMap(width, height);
-    var mapper = getCellularGenerator(width, height, aliveRatio);
+    var tiles = (0, _map.getEmptyMap)(width, height);
+    var mapper = getMapper(width, height, aliveRatio);
     var preseed = iterations - 1;
 
     for (var i = 0; i < preseed; i++) {
@@ -5834,88 +5864,99 @@ function CellularMap(width, height) {
     }
 
     mapper.create(function (x, y, alive) {
-        return tiles[x][y] = alive ? _tile.Tile.floorTile() : _tile.Tile.wallTile();
+        return tiles[x][y] = alive ? _tile.Tile.FloorTile : _tile.Tile.WallTile;
     });
 
-    return Map(tiles);
+    return new _map.Map(tiles);
+}
+
+},{"../entity/tile":6,"./map":9,"rot-js":2}],9:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.getEmptyMap = getEmptyMap;
+exports.Map = Map;
+
+var _tile = require('./../entity/tile');
+
+function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
+
+function getEmptyMap(width, height) {
+    return new Array(width).fill(0).map(function () {
+        return new Array(height).fill(0).map(function () {
+            return _tile.Tile.NullTile;
+        });
+    });
 }
 
 function Map() {
     var floorPlan = arguments.length <= 0 || arguments[0] === undefined ? [[]] : arguments[0];
 
-    var tiles = [].concat(_toConsumableArray(floorPlan));
-    var width = tiles.length;
-    var height = tiles[0].length;
-
-    return {
-        getDimensions: function getDimensions() {
-            return {
-                height: height,
-                width: width
-            };
-        },
-        getHeight: function getHeight() {
-            return height;
-        },
-        getTile: function getTile(x, y) {
-            if (x < 0 || x >= width || y < 0 || y >= height) {
-                return _tile.Tile.nullTile();
-            }
-
-            return tiles[x][y] || _tile.Tile.nullTile();
-        },
-        getTiles: function getTiles() {
-            return [].concat(_toConsumableArray(tiles));
-        },
-        getWidth: function getWidth() {
-            return width;
-        }
-    };
+    this._tiles = [].concat(_toConsumableArray(floorPlan));
+    this._width = this._tiles.length;
+    this._height = this._tiles[0].length;
 }
 
-},{"./tile":8,"rot-js":2}],8:[function(require,module,exports){
+Map.prototype.dig = function (x, y) {
+    if (this.getTile(x, y).isDiggable()) {
+        this._tiles[x][y] = _tile.Tile.FloorTile;
+    }
+};
+
+Map.prototype.getDimensions = function () {
+    return {
+        height: this._height,
+        width: this._width
+    };
+};
+
+Map.prototype.getHeight = function () {
+    return this._height;
+};
+
+Map.prototype.getRandomWalkablePosition = function () {
+    var x = 0;
+    var y = 0;
+
+    while (!this.getTile(x, y).isWalkable()) {
+        x = Math.floor(Math.random() * this._width);
+        y = Math.floor(Math.random() * this._height);
+    }
+
+    return { x: x, y: y };
+};
+
+Map.prototype.getTile = function (x, y) {
+    if (x < 0 || x >= this._width || y < 0 || y >= this._height) {
+        return _tile.Tile.NullTile;
+    }
+
+    return this._tiles[x][y] || _tile.Tile.NullTile;
+};
+
+Map.prototype.getTiles = function () {
+    return [].concat(_toConsumableArray(this._tiles));
+};
+
+Map.prototype.getWidth = function () {
+    return this._width;
+};
+
+},{"./../entity/tile":6}],10:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.Tile = Tile;
-
-var _glyph = require('./glyph');
-
-var _constants = require('../core/constants');
-
-function Tile(glyph) {
-    return {
-        getGlyph: function getGlyph() {
-            return glyph;
-        }
-    };
-}
-
-Tile.floorTile = function () {
-    return Tile((0, _glyph.Glyph)('.'));
-};
-Tile.nullTile = function () {
-    return Tile((0, _glyph.Glyph)());
-};
-Tile.wallTile = function () {
-    return Tile((0, _glyph.Glyph)('#', 'goldenrod'));
-};
-
-},{"../core/constants":3,"./glyph":6}],9:[function(require,module,exports){
-'use strict';
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.LoseState = LoseState;
+exports.loseState = loseState;
 
 var _rotJs = require('rot-js');
 
 var _constants = require('../core/constants');
 
-function LoseState(game) {
+function loseState(game) {
     return {
         enter: function enter() {
             console.log('Entered lose state.');
@@ -5935,30 +5976,30 @@ function LoseState(game) {
     };
 }
 
-},{"../core/constants":3,"rot-js":2}],10:[function(require,module,exports){
+},{"../core/constants":3,"rot-js":2}],11:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.PlayState = PlayState;
+exports.playState = playState;
 
 var _rotJs = require('rot-js');
 
 var _constants = require('../core/constants');
 
-var _map = require('../map/map');
+var _cellular = require('../map/cellular');
 
 var _display = require('../core/display');
 
-function PlayState(game) {
+function playState(game) {
     var map = void 0;
-
-    var position = { x: 0, y: 0 };
+    var pos = void 0;
 
     return {
         enter: function enter() {
-            map = (0, _map.CellularMap)(500, 500);
+            map = (0, _cellular.cellularMap)(500, 500);
+            pos = map.getRandomWalkablePosition();
         },
         exit: function exit() {
             console.log('Exited play state.');
@@ -5974,52 +6015,52 @@ function PlayState(game) {
                 }
 
                 if (key === _rotJs.VK_LEFT) {
-                    position = (0, _display.move)(map.getDimensions(), position, { x: -1, y: 0 });
+                    pos = (0, _display.move)(map.getDimensions(), pos, { x: -1, y: 0 });
                 }
 
                 if (key === _rotJs.VK_RIGHT) {
-                    position = (0, _display.move)(map.getDimensions(), position, { x: 1, y: 0 });
+                    pos = (0, _display.move)(map.getDimensions(), pos, { x: 1, y: 0 });
                 }
 
                 if (key === _rotJs.VK_UP) {
-                    position = (0, _display.move)(map.getDimensions(), position, { x: 0, y: -1 });
+                    pos = (0, _display.move)(map.getDimensions(), pos, { x: 0, y: -1 });
                 }
 
                 if (key === _rotJs.VK_DOWN) {
-                    position = (0, _display.move)(map.getDimensions(), position, { x: 0, y: 1 });
+                    pos = (0, _display.move)(map.getDimensions(), pos, { x: 0, y: 1 });
                 }
             }
         },
         render: function render(display) {
             var screen = game.getDimensions();
-            var topLeft = (0, _display.origin)(map.getDimensions(), screen, position);
+            var topLeft = (0, _display.origin)(map.getDimensions(), screen, pos);
 
             for (var x = topLeft.x; x < topLeft.x + screen.width; x++) {
                 for (var y = topLeft.y; y < topLeft.y + screen.height; y++) {
-                    var glyph = map.getTile(x, y).getGlyph();
+                    var tile = map.getTile(x, y);
 
-                    display.draw(x - topLeft.x, y - topLeft.y, glyph.getChar(), glyph.getForeground(), glyph.getBackground());
+                    display.draw(x - topLeft.x, y - topLeft.y, tile.getCharacter(), tile.getForeground(), tile.getBackground());
                 }
             }
 
-            display.draw(position.x - topLeft.x, position.y - topLeft.y, '@', 'white', 'black');
+            display.draw(pos.x - topLeft.x, pos.y - topLeft.y, '@', 'white', 'black');
         }
     };
 }
 
-},{"../core/constants":3,"../core/display":4,"../map/map":7,"rot-js":2}],11:[function(require,module,exports){
+},{"../core/constants":3,"../core/display":4,"../map/cellular":8,"rot-js":2}],12:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.TitleState = TitleState;
+exports.titleState = titleState;
 
 var _rotJs = require('rot-js');
 
 var _constants = require('../core/constants');
 
-function TitleState(game) {
+function titleState(game) {
     return {
         enter: function enter() {
             console.log('Entered title state.');
@@ -6040,19 +6081,19 @@ function TitleState(game) {
     };
 }
 
-},{"../core/constants":3,"rot-js":2}],12:[function(require,module,exports){
+},{"../core/constants":3,"rot-js":2}],13:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.WinState = WinState;
+exports.winState = winState;
 
 var _rotJs = require('rot-js');
 
 var _constants = require('../core/constants');
 
-function WinState(game) {
+function winState(game) {
     return {
         enter: function enter() {
             console.log('Entered win state.');
@@ -6072,4 +6113,4 @@ function WinState(game) {
     };
 }
 
-},{"../core/constants":3,"rot-js":2}]},{},[5]);
+},{"../core/constants":3,"rot-js":2}]},{},[7]);

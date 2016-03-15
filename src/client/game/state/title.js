@@ -1,7 +1,7 @@
 import { Color, VK_RETURN }     from 'rot-js';
 import { GE_KEYDOWN, GS_PLAY }  from '../core/constants';
 
-export function TitleState(game) {
+export function titleState(game) {
     return {
         enter() {
             console.log('Entered title state.');

@@ -1,7 +1,7 @@
 import { Color, VK_RETURN }     from 'rot-js';
 import { GE_KEYDOWN, GS_TITLE } from '../core/constants';
 
-export function LoseState(game) {
+export function loseState(game) {
     return {
         enter() {
             console.log('Entered lose state.');

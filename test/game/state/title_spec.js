@@ -3,7 +3,7 @@ import sinonChai    from 'sinon-chai';
 import sinon        from 'sinon';
 
 import { VK_RETURN }            from 'rot-js';
-import { TitleState }           from '../../../src/client/game/states/title';
+import { titleState }           from '../../../src/client/game/state/title';
 import { GE_KEYDOWN, GS_PLAY }  from '../../../src/client/game/core/constants';
 
 chai.should();
@@ -20,7 +20,7 @@ describe('TitleState', () => {
 
             sinon.spy(game, 'switchTo');
 
-            const state = TitleState(game);
+            const state = titleState(game);
 
             state.handle(GE_KEYDOWN, VK_RETURN);
 
@@ -31,7 +31,7 @@ describe('TitleState', () => {
 
     describe('Screen rendering', () => {
         it('Render game title', () => {
-            const state = TitleState({
+            const state = titleState({
                 switchTo(key) {}
             });
 
