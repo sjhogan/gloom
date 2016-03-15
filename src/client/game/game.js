@@ -2,20 +2,20 @@ import { Display, isSupported, VK_ESCAPE, VK_RETURN } from 'rot-js';
 
 import { GE_KEYDOWN, GE_STATECHANGE, GS_LOSE, GS_PLAY, GS_TITLE, GS_WIN } from './core/constants';
 
-import { LoseState }    from './state/lose';
-import { PlayState }    from './state/play';
-import { TitleState }   from './state/title';
-import { WinState }     from './state/win';
+import { loseState }    from './state/lose';
+import { playState }    from './state/play';
+import { titleState }   from './state/title';
+import { winState }     from './state/win';
 
 window.onload = () => {
     if (isSupported()) {
         const display   = new Display({ width: 80, height: 24 });
         const gloom     = Gloom(display);
 
-        gloom.register(GS_LOSE, LoseState);
-        gloom.register(GS_PLAY, PlayState);
-        gloom.register(GS_TITLE, TitleState);
-        gloom.register(GS_WIN, WinState);
+        gloom.register(GS_LOSE, loseState);
+        gloom.register(GS_PLAY, playState);
+        gloom.register(GS_TITLE, titleState);
+        gloom.register(GS_WIN, winState);
 
         document.body.appendChild(display.getContainer());
 

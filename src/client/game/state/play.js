@@ -1,16 +1,16 @@
 import { VK_DOWN, VK_ESCAPE, VK_LEFT, VK_RETURN, VK_RIGHT, VK_UP } from 'rot-js';
 
 import { GE_KEYDOWN, GS_LOSE, GS_WIN }  from '../core/constants';
-import { CellularMap }                  from '../map/cellular';
+import { cellularMap }                  from '../map/cellular';
 import { move, origin }                 from '../core/display';
 
-export function PlayState(game) {
+export function playState(game) {
     let map;
     let pos;
 
     return {
         enter() {
-            map = CellularMap(500, 500);
+            map = cellularMap(500, 500);
             pos = map.getRandomWalkablePosition();
         },
 

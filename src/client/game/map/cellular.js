@@ -10,7 +10,7 @@ function getMapper(width, height, aliveRatio) {
     return mapper;
 }
 
-export function CellularMap(width, height, aliveRatio = 0.575, iterations = 5) {
+export function cellularMap(width, height, aliveRatio = 0.575, iterations = 5) {
     const tiles     = getEmptyMap(width, height);
     const mapper    = getMapper(width, height, aliveRatio);
     const preseed   = iterations - 1;
@@ -19,7 +19,7 @@ export function CellularMap(width, height, aliveRatio = 0.575, iterations = 5) {
         mapper.create();
     }
 
-    mapper.create((x, y, alive) => tiles[x][y] = alive ? Tile.floorTile() : Tile.wallTile());
+    mapper.create((x, y, alive) => tiles[x][y] = alive ? Tile.FloorTile : Tile.WallTile);
 
-    return Map(tiles);
+    return new Map(tiles);
 }
