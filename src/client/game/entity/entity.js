@@ -1,4 +1,4 @@
-import { Glyph } from 'glyph';
+import { Glyph } from './glyph';
 
 export function Entity(properties = {}) {
     Glyph.call(this, properties);
@@ -18,7 +18,7 @@ Entity.prototype.getName = function() {
 };
 
 Entity.prototype.getPosition = function() {
-    return Object.assign({}, position);
+    return Object.assign({}, this._position);
 };
 
 Entity.prototype.setPosition = function(nextPosition = {}) {

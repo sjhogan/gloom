@@ -3,15 +3,22 @@ import { VK_DOWN, VK_ESCAPE, VK_LEFT, VK_RETURN, VK_RIGHT, VK_UP } from 'rot-js'
 import { GE_KEYDOWN, GS_LOSE, GS_WIN }  from '../core/constants';
 import { cellularMap }                  from '../map/cellular';
 import { move, origin }                 from '../core/display';
+import { Entity }                       from '../entity/entity';
 
 export function playState(game) {
     let map;
-    let pos;
+
+    const player = new Entity({
+        background: 'black',
+        character:  '@',
+        foreground: 'white'
+    });
 
     return {
         enter() {
             map = cellularMap(500, 500);
-            pos = map.getRandomWalkablePosition();
+
+            player.setPosition(map.getRandomWalkablePosition());
         },
 
         exit() {
@@ -29,24 +36,25 @@ export function playState(game) {
                 }
 
                 if (key === VK_LEFT) {
-                    pos = move(map.getDimensions(), pos, { x: -1, y: 0 });
+                    return player.setPosition(move(map.getDimensions(), player.getPosition(), { x: -1, y: 0 }));
                 }
 
                 if (key === VK_RIGHT) {
-                    pos = move(map.getDimensions(), pos, { x: 1, y: 0 });
+                    return player.setPosition(move(map.getDimensions(), player.getPosition(), { x: 1, y: 0 }));
                 }
 
                 if (key === VK_UP) {
-                    pos = move(map.getDimensions(), pos, { x: 0, y: -1 });
+                    return player.setPosition(move(map.getDimensions(), player.getPosition(), { x: 0, y: -1 }));
                 }
 
                 if (key === VK_DOWN) {
-                    pos = move(map.getDimensions(), pos, { x: 0, y: 1 });
+                    return player.setPosition(move(map.getDimensions(), player.getPosition(), { x: 0, y: 1 }));
                 }
             }
         },
 
         render(display) {
+            const pos       = player.getPosition();
             const screen    = game.getDimensions();
             const topLeft   = origin(map.getDimensions(), screen, pos);
 
@@ -58,7 +66,7 @@ export function playState(game) {
                 }
             }
 
-            display.draw(pos.x - topLeft.x, pos.y - topLeft.y, '@', 'white', 'black');
+            display.draw(pos.x - topLeft.x, pos.y - topLeft.y, player.getCharacter(), player.getForeground(), player.getBackground());
         }
     }
 }
