@@ -3,19 +3,24 @@ import { VK_DOWN, VK_ESCAPE, VK_LEFT, VK_RETURN, VK_RIGHT, VK_UP } from 'rot-js'
 import { GE_KEYDOWN, GS_LOSE, GS_WIN }  from '../core/constants';
 import { cellularMap }                  from '../map/cellular';
 import { move, origin }                 from '../core/display';
+import { Entity }                       from '../entity/entity';
+import { moveable }                     from '../entity/mixin/moveable'
 
 export function playState(game) {
-    let map;
-    let pos;
+    let level;
+    let player;
 
     return {
         enter() {
-            map = cellularMap(500, 500);
-            pos = map.getRandomWalkablePosition();
+            level   = cellularMap(500, 500);
+            player  = new Entity({ background: 'black', character: '@', foreground: 'white' }, moveable);
+
+            player.setPosition(level.getRandomWalkablePosition());
         },
 
         exit() {
-            console.log('Exited play state.');
+            level   = null;
+            player  = null;
         },
 
         handle(event, key) {
@@ -29,36 +34,37 @@ export function playState(game) {
                 }
 
                 if (key === VK_LEFT) {
-                    pos = move(map.getDimensions(), pos, { x: -1, y: 0 });
+                    return player.tryMove(-1, 0, level);
                 }
 
                 if (key === VK_RIGHT) {
-                    pos = move(map.getDimensions(), pos, { x: 1, y: 0 });
+                    return player.tryMove(1, 0, level);
                 }
 
                 if (key === VK_UP) {
-                    pos = move(map.getDimensions(), pos, { x: 0, y: -1 });
+                    return player.tryMove(0, -1, level);
                 }
 
                 if (key === VK_DOWN) {
-                    pos = move(map.getDimensions(), pos, { x: 0, y: 1 });
+                    return player.tryMove(0, 1, level);
                 }
             }
         },
 
         render(display) {
+            const pos       = player.getPosition();
             const screen    = game.getDimensions();
-            const topLeft   = origin(map.getDimensions(), screen, pos);
+            const topLeft   = origin(level.getDimensions(), screen, pos);
 
             for (let x = topLeft.x; x < topLeft.x + screen.width; x++) {
                 for (let y = topLeft.y; y < topLeft.y + screen.height; y++) {
-                    const tile = map.getTile(x, y);
+                    const tile = level.getTile(x, y);
 
                     display.draw(x - topLeft.x, y - topLeft.y, tile.getCharacter(), tile.getForeground(), tile.getBackground());
                 }
             }
 
-            display.draw(pos.x - topLeft.x, pos.y - topLeft.y, '@', 'white', 'black');
+            display.draw(pos.x - topLeft.x, pos.y - topLeft.y, player.getCharacter(), player.getForeground(), player.getBackground());
         }
     }
 }
