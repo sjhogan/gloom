@@ -4,25 +4,23 @@ import { GE_KEYDOWN, GS_LOSE, GS_WIN }  from '../core/constants';
 import { cellularMap }                  from '../map/cellular';
 import { move, origin }                 from '../core/display';
 import { Entity }                       from '../entity/entity';
+import { moveable }                     from '../entity/mixin/moveable'
 
 export function playState(game) {
-    let map;
-
-    const player = new Entity({
-        background: 'black',
-        character:  '@',
-        foreground: 'white'
-    });
+    let level;
+    let player;
 
     return {
         enter() {
-            map = cellularMap(500, 500);
+            level   = cellularMap(500, 500);
+            player  = new Entity({ background: 'black', character: '@', foreground: 'white' }, moveable);
 
-            player.setPosition(map.getRandomWalkablePosition());
+            player.setPosition(level.getRandomWalkablePosition());
         },
 
         exit() {
-            console.log('Exited play state.');
+            level   = null;
+            player  = null;
         },
 
         handle(event, key) {
@@ -36,19 +34,19 @@ export function playState(game) {
                 }
 
                 if (key === VK_LEFT) {
-                    return player.setPosition(move(map.getDimensions(), player.getPosition(), { x: -1, y: 0 }));
+                    return player.tryMove(-1, 0, level);
                 }
 
                 if (key === VK_RIGHT) {
-                    return player.setPosition(move(map.getDimensions(), player.getPosition(), { x: 1, y: 0 }));
+                    return player.tryMove(1, 0, level);
                 }
 
                 if (key === VK_UP) {
-                    return player.setPosition(move(map.getDimensions(), player.getPosition(), { x: 0, y: -1 }));
+                    return player.tryMove(0, -1, level);
                 }
 
                 if (key === VK_DOWN) {
-                    return player.setPosition(move(map.getDimensions(), player.getPosition(), { x: 0, y: 1 }));
+                    return player.tryMove(0, 1, level);
                 }
             }
         },
@@ -56,11 +54,11 @@ export function playState(game) {
         render(display) {
             const pos       = player.getPosition();
             const screen    = game.getDimensions();
-            const topLeft   = origin(map.getDimensions(), screen, pos);
+            const topLeft   = origin(level.getDimensions(), screen, pos);
 
             for (let x = topLeft.x; x < topLeft.x + screen.width; x++) {
                 for (let y = topLeft.y; y < topLeft.y + screen.height; y++) {
-                    const tile = map.getTile(x, y);
+                    const tile = level.getTile(x, y);
 
                     display.draw(x - topLeft.x, y - topLeft.y, tile.getCharacter(), tile.getForeground(), tile.getBackground());
                 }
