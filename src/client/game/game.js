@@ -31,10 +31,6 @@ function Gloom(display) {
     window.addEventListener(GE_KEYDOWN, event => {
         if (activeState) {
             activeState.handle(event.type, event.keyCode);
-
-            display.clear();
-
-            activeState.render(display);
         }
     });
 
@@ -58,6 +54,14 @@ function Gloom(display) {
             return display.getOptions().width;
         },
 
+        refresh() {
+            display.clear();
+
+            if (activeState) {
+                activeState.render(display);
+            }
+        },
+
         register(key, factory) {
             states.set(key, factory(this));
         },
@@ -73,7 +77,8 @@ function Gloom(display) {
                 activeState = states.get(key);
 
                 activeState.enter();
-                activeState.render(display);
+
+                this.refresh();
             }
         }
     };

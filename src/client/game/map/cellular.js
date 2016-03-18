@@ -10,7 +10,7 @@ function getMapper(width, height, aliveRatio) {
     return mapper;
 }
 
-export function cellularMap(width, height, aliveRatio = 0.575, iterations = 5) {
+export function cellularMap(width, height, aliveRatio = 0.5, iterations = 5) {
     const tiles     = getEmptyMap(width, height);
     const mapper    = getMapper(width, height, aliveRatio);
     const preseed   = iterations - 1;
