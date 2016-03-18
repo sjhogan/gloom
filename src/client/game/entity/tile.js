@@ -1,25 +1,31 @@
 import { Glyph }        from './glyph';
 import { GC_GOLDENROD } from '../core/constants'
 
-export function Tile(properties = {}) {
-    Glyph.call(this, properties);
+export class Tile extends Glyph {
+    constructor(properties = {}) {
+        super(properties);
 
-    this._diggable = properties.diggable;
-    this._walkable = properties.walkable;
+        this._diggable = properties.diggable;
+        this._walkable = properties.walkable;
+    }
+
+    isDiggable() {
+        return !!this._diggable;
+    }
+
+    isWalkable() {
+        return !!this._walkable;
+    }
+
+    static get FloorTile() {
+        return new Tile({ character: '.', walkable: true });
+    }
+
+    static get NullTile() {
+        return new Tile();
+    }
+
+    static get WallTile() {
+        return new Tile({ character: '#', foreground: GC_GOLDENROD, diggable: true });
+    }
 }
-
-Tile.prototype = Object.create(Glyph.prototype);
-
-Tile.prototype.isDiggable = function() {
-    return !!this._diggable;
-};
-
-Tile.prototype.isWalkable = function() {
-    return !!this._walkable;
-};
-
-Tile.prototype.constructor = Tile;
-
-Tile.FloorTile = new Tile({ character: '.', walkable: true });
-Tile.NullTile = new Tile();
-Tile.WallTile = new Tile({ character: '#', foreground: 'goldenrod', diggable: true });
