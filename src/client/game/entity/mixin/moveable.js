@@ -1,11 +1,16 @@
 export const moveable = {
-    name: 'moveable',
+    name:   'moveable',
+    type:   'moveable',
 
     tryMove(x, y, map) {
         const pos = {
             x: this._position.x + x,
             y: this._position.y + y
         };
+
+        if (map.getEntityAt(x, y)) {
+            return false;
+        }
 
         const tile = map.getTile(pos.x, pos.y);
 
